@@ -13,7 +13,7 @@ import numpy as np
 # Colores para los gráficos y la página
 colors = {
     'background': '#111111',
-    'text': '#7FDBFF'
+    'text': '#f3f6f4'
 }
 
 # Creamos el DataFrame (df) del Archivo
@@ -52,6 +52,13 @@ heatmap_count = px.density_heatmap(
                     # Título del gráfico
                     title="Relación origen-destino por cantidad")
 
+# Heatmap count
+heatmap_count.update_layout(
+    plot_bgcolor=colors['background'],
+    paper_bgcolor=colors['background'],
+    font_color=colors['text']
+)
+
 # Tabla de exportaciones e importaciones por monto y no cantidad
 # Copiamos el df original
 rutas_sum = df.copy()
@@ -77,7 +84,7 @@ heatmap_sum = px.density_heatmap(
 
 
 # Medios de transporte más importantes
-# Agrupamos el df original a partir del medio de transporte
+# Agrupamos el df original a partir del medio de transporte y sumamos su mont
 transportes = (df.groupby(['transport_mode'], group_keys=False)
                     .sum().reset_index())
 # Eliminamos las columnas que no nos interesan y nos quedamos solo con la de
@@ -88,7 +95,7 @@ transportes.rename(columns={'transport_mode': 'Medio de Transporte',
                             'total_value': 'Monto total'},
                    inplace=True)
 
-# 
+# Creamos un gráfico tipo pie con los datos del df transportes
 pie_medios_transporte = px.pie(transportes,
                                values='Monto total',
                                names='Medio de Transporte',
@@ -96,32 +103,49 @@ pie_medios_transporte = px.pie(transportes,
 
 
 # 80% del valor de exportaciones y importaciones
+# Copiamos el df original
 rutas_importantes = df.copy()
+# Agrupamos por origen y destino y sumamos su monto
 rutas_importantes = rutas_importantes.groupby(['origin', 'destination'],
                           group_keys=False)['total_value'].sum().reset_index()
+# Ordenamos el df de manera descendente respecto al monto
 rutas_importantes.sort_values('total_value', ascending=False, inplace=True)
 
+# Guardamos el total de sumar todos lo montos
 gran_total = rutas_importantes['total_value'].sum()
+# Agregamos el porcentaje diviendo el monto total con la suma acumulativa de
+#   los montos por renglones ordenados de mayor a menor
 rutas_importantes['porcentaje'] = rutas_importantes['total_value'].cumsum() / gran_total
 
+# Creamos un df con todos los países de origen contamos la cantidad de rutas
+# que salen de ese país
 count_origin_100 = rutas_importantes.groupby(['origin']).count().reset_index()
+# Nos quedamos solo con la columan del nombre del país y de la cantidad de
+#   rutas que salen de ese país
 count_origin_100.drop(['total_value'], axis=1, inplace=True)
+# Cambiamos el nombre de las columnas
 count_origin_100.rename(columns={'porcentaje': 'Cantidad de rutas',
                             'origin': 'País de origen'}, inplace=True)
 
+# Obtenemos las rutas de aquellas que tiene un porcentaje acumulado igual o
+#   menor al 80%
 rutas_importantes_80 = rutas_importantes.loc[rutas_importantes['porcentaje'] <= 0.8].reset_index()
 
 # Elegimos solos los países de acuerdo al origin.
-count_origin_80 = rutas_importantes_80.groupby(['origin']).count().reset_index()
+count_origin_80 = (rutas_importantes_80 .groupby(['origin'])
+                    .count().reset_index())
+# Nos quedamos solo con la columan del nombre del país y de la cantidad de
+#   rutas que salen de ese país
 count_origin_80.drop(['total_value'], axis=1, inplace=True)
+# Cambiamos el nombre de las columnas
 count_origin_80.rename(columns={'porcentaje': 'Cantidad de rutas',
                             'origin': 'País de origen'}, inplace=True)
 
+# Creamos una gráfica de barras con los datos de los df
 bar_origin_100 = px.bar(count_origin_100,
                         x="País de origen",
                         y="Cantidad de rutas",
                         title="Rutas por países de origen del valor total")
-
 bar_origin_80 = px.bar(count_origin_80,
                         x="País de origen",
                         y="Cantidad de rutas",
@@ -139,12 +163,24 @@ for pais in list_100:
 # Creamos la app en Dash
 app = Dash(__name__)
 
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
+    html.H1(children='Synergy Logistics', style={
+            'textAlign': 'center',
+            'color': colors['text']
+        }),
 
     html.Div(children='''
-        Dash: A web application framework for your data.
-    '''),
+        Análisi de datos de la información proporcionada por Synergy Logistics
+        para el diseño de una nueva estrategía en el año 2021
+    ''', style={
+            'textAlign': 'center',
+            'color': colors['text']
+        }),
+
+    html.H2(children='Rutas más importantes', style={
+            'textAlign': 'center',
+            'color': colors['text']
+        }),
 
     dcc.Graph(
         id='heatmap_count',
