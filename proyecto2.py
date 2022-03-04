@@ -60,18 +60,20 @@ rutas_sum = (rutas_sum.groupby(['direction', 'origin', 'destination'])['total_va
                         .sum().reset_index())
 # Cambiamos el nombre de las columnas
 rutas_sum.rename(columns={'direction': 'Dirección',
-                 'origin': 'País de origen',
-                 'destination': 'País de destino',
-                 'total_value': 'Monto'}, inplace=True)
+                            'origin': 'País de origen',
+                            'destination': 'País de destino',
+                            'total_value': 'Monto'},
+                 inplace=True)
 
 # Este heatmap es muy similar a heatmap_count
-heatmap_sum = px.density_heatmap(rutas_sum,
-                            y="País de origen",
-                            x="País de destino",
-                            # Usamos la columna de Monto para el eje z
-                            z="Monto",
-                            text_auto=True,
-                            title="Relación origen-destino por monto")
+heatmap_sum = px.density_heatmap(
+                    rutas_sum,
+                    y="País de origen",
+                    x="País de destino",
+                    # Usamos la columna de Monto para el eje z
+                    z="Monto",
+                    text_auto=True,
+                    title="Relación origen-destino por monto")
 
 
 # Medios de transporte más importantes
@@ -86,6 +88,7 @@ transportes.rename(columns={'transport_mode': 'Medio de Transporte',
                             'total_value': 'Monto total'},
                    inplace=True)
 
+# 
 pie_medios_transporte = px.pie(transportes,
                                values='Monto total',
                                names='Medio de Transporte',
