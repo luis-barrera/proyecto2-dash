@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-# TODO Arreglar los HR
 # TODO Pasar todo esto a un notebook y luego exportarlo a pdf, recordar poner el link a Github.
 
 # Imports para Dash
@@ -52,6 +51,7 @@ heatmap_count = px.density_heatmap(
                     text_auto=True,
                     # Título del gráfico
                     title="Relación origen-destino por cantidad")
+# Párrafo con texto explicando lá gráfica y los resultados
 par_count = html.P(children='''
     El siguiente gráfico muestra la distribución de las importaciones y
     exportaciones medido por la cantidad de operaciones en cada ruta.''',
@@ -85,6 +85,7 @@ heatmap_sum = px.density_heatmap(
                     z="Monto",
                     text_auto=True,
                     title="Relación origen-destino por monto")
+# Párrafo con texto explicando lá gráfica y los resultados
 par_sum = html.P(children='''
     En este otro gráfico podemos ver las rutas de importación y exportación
     entre países con su monto total.''',
@@ -95,6 +96,7 @@ heatmap_sum.update_layout(
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
+# Párrafo con texto explicando lá gráfica y los resultados
 par_rutas_conc = html.P(children='''
     Cómo podemos ver, no hay relación entre las rutas que más operaciones
     tienen y las que más monto manejan. Por lo que no se recomienda implementar
@@ -116,12 +118,13 @@ transportes.rename(columns={'transport_mode': 'Medio de Transporte',
                             'year': 'Año'},
                    inplace=True)
 
-# Creamos un gráfico tipo pie con los datos del df transportes
+# Creamos un gráfico tipo line con los datos del df transportes
 plot_medios_transporte = px.line(transportes,
                                 x='Año',
                                 y='Monto total',
                                 color='Medio de Transporte',
                                 title='Medios de transporte por monto generado')
+# Colores del plot
 plot_medios_transporte.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
@@ -138,6 +141,7 @@ transportes_html = dash_table.DataTable(
                         'backgroundColor': 'rgb(50, 50, 50)',
                         'color': 'white'
                     })
+# Párrafo con texto explicando lá gráfica y los resultados
 par_transportes = html.P(children='''
      Los tres medios de transportes más importantes para Synergy Logistics son
      Air, Rail y Sea. Una estrategia recomendada sería crear un plan para
@@ -204,12 +208,13 @@ bar_origin_100.update_layout(
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
+# Párrafos con texto explicando lá gráfica y los resultados
 par_origin = html.P(children='''
     En las primera gráfica, tenemos los países de origen con la cantidad de
     rutas que pertenecen a estos. En la segunda gráfica tenemos los países
     que generan el 80% del monto con su respectiva cantidad de rutas.''',
                    style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
-par_origin_conc = html.P(children='''Vemos que reducimos 6 países si aplicamos
+par_origin_conc = html.P(children='''Vemos que reducimos 7 países si aplicamos
     esta estrategia. Si consideramos que tener instalaciones en cada país tiene
     costos de operación, si tenemos menos países dónde no se genera tanto valor
     entonces es una buena estrategia para ahorrar costos. Así, nos podemos
@@ -217,8 +222,8 @@ par_origin_conc = html.P(children='''Vemos que reducimos 6 países si aplicamos
                    style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
 
 
+# Mostramos los países descartados
 paises_descartados = []
-
 list_100 = count_origin_100['País de origen'].tolist()
 list_80 = count_origin_80['País de origen'].tolist()
 
@@ -226,9 +231,24 @@ for pais in list_100:
     if pais not in list_80:
         paises_descartados.append(pais)
 
+# Vamos agregando los países de la lista al elemento html
+par_paises_descartados = html.P(children=['Los paises descartados usando el 80% son: '],
+                                style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
+for i in range(len(paises_descartados)):
+    par_paises_descartados.children.append(paises_descartados[i])
+    if i < len(paises_descartados) - 2:
+        par_paises_descartados.children.append(", ")
+    if i == len(paises_descartados) - 2:
+        par_paises_descartados.children.append(" y ")
+
+par_paises_descartados.children.append(".")
+
+
+# Dash
 # Creamos la app en Dash
 app = Dash(__name__)
 
+# Declaramos el layout
 app.layout = html.Div(
     style={'backgroundColor': colors['background']},
     children=[
@@ -323,15 +343,27 @@ app.layout = html.Div(
             style={'display': 'grid',
                     'width': '100%',
                     'margin': '0 auto',
-                    # 'justify-content': 'center',
-                    # 'align-items': 'center',
-                    # 'gap': '4px',
                     'grid-template-columns': '1fr 1fr'}),
 
+        par_paises_descartados,
         par_origin_conc,
 
-        html.Div(style={'height': '40px'})
+        html.Div(style={'height': '40px'}),
+
+        html.Footer(children=[
+                    html.P(children=[
+                            'Creado por ',
+                            html.A(children='luis-barrera', href='https://github.com/luis-barrera'),
+                            ', repositorio del proyecto en ',
+                            html.A(children='GitHub', href='https://github.com/luis-barrera/proyecto2-dash'),
+                           ])],
+                    style={'display': 'flex',
+                            'justify-content': 'center',
+                            'padding': '5px',
+                            'background-color': '#45a1ff',
+                            'color': '#111'}),
 ])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
