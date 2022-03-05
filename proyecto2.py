@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-# TODO aumentar la altura de los heatmap
+# TODO Arreglar los HR
+# TODO Pasar todo esto a un notebook y luego exportarlo a pdf, recordar poner el link a Github.
 
 # Imports para Dash
 from dash import Dash, html, dcc, dash_table
@@ -117,17 +118,18 @@ transportes.rename(columns={'transport_mode': 'Medio de Transporte',
 
 # Creamos un gráfico tipo pie con los datos del df transportes
 plot_medios_transporte = px.line(transportes,
-                               x='Año',
-                               y='Monto Total',
-                               title='Medios de transporte por monto generado')
-pie_medios_transporte.update_layout(
+                                x='Año',
+                                y='Monto total',
+                                color='Medio de Transporte',
+                                title='Medios de transporte por monto generado')
+plot_medios_transporte.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
 # Tabla en html a partir del df
 transportes_html = dash_table.DataTable(
-                    data=transportes.to_dict('records'),
+                    data=transportes.head(10).to_dict('records'),
                     style_header={
                         'backgroundColor': 'rgb(30, 30, 30)',
                         'color': 'white'
@@ -137,9 +139,9 @@ transportes_html = dash_table.DataTable(
                         'color': 'white'
                     })
 par_transportes = html.P(children='''
-     Los tres transportes más importantes para Synergy Logistics son Air, Rail
-     y Sea. Una estrategia recomendada sería crear un plan para sustituir Road
-     por los otros medios de transportes.''',
+     Los tres medios de transportes más importantes para Synergy Logistics son
+     Air, Rail y Sea. Una estrategia recomendada sería crear un plan para
+     sustituir Road por los otros medios de transportes.''',
                          style={'margin': '0', 'textAlign': 'center', 'color': colors['text']})
 
 
@@ -202,6 +204,18 @@ bar_origin_100.update_layout(
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
+par_origin = html.P(children='''
+    En las primera gráfica, tenemos los países de origen con la cantidad de
+    rutas que pertenecen a estos. En la segunda gráfica tenemos los países
+    que generan el 80% del monto con su respectiva cantidad de rutas.''',
+                   style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
+par_origin_conc = html.P(children='''Vemos que reducimos 6 países si aplicamos
+    esta estrategia. Si consideramos que tener instalaciones en cada país tiene
+    costos de operación, si tenemos menos países dónde no se genera tanto valor
+    entonces es una buena estrategia para ahorrar costos. Así, nos podemos
+    enfocar en los países que más valor tienen sin gastar tanto.''',
+                   style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
+
 
 paises_descartados = []
 
@@ -264,8 +278,9 @@ app.layout = html.Div(
         html.Div(
             children=[
                 html.Div(children=[
-                            html.Div(par_transportes),
-                            transportes_html],
+                            html.Div(par_transportes)],
+                            # html.Div(par_transportes),
+                            # transportes_html],
                          style={'margin': 'auto',
                                 'height': '100%',
                                 'display': 'grid',
@@ -292,6 +307,8 @@ app.layout = html.Div(
                 'color': colors['text']
             }),
 
+        par_origin,
+
         html.Div(children=[
             dcc.Graph(
                 id='bar_origin_100',
@@ -310,6 +327,10 @@ app.layout = html.Div(
                     # 'align-items': 'center',
                     # 'gap': '4px',
                     'grid-template-columns': '1fr 1fr'}),
+
+        par_origin_conc,
+
+        html.Div(style={'height': '40px'})
 ])
 
 if __name__ == '__main__':
