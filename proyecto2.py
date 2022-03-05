@@ -3,7 +3,7 @@
 # TODO aumentar la altura de los heatmap
 
 # Imports para Dash
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, dash_table
 import plotly.express as px
 
 # Imports para Data Analisis
@@ -51,7 +51,10 @@ heatmap_count = px.density_heatmap(
                     text_auto=True,
                     # Título del gráfico
                     title="Relación origen-destino por cantidad")
-
+par_count = html.P(children='''
+    El siguiente gráfico muestra la distribución de las importaciones y
+    exportaciones medido por la cantidad de operaciones en cada ruta.''',
+                   style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
 # Colores del gráfico
 heatmap_count.update_layout(
     plot_bgcolor=colors['background'],
@@ -81,38 +84,64 @@ heatmap_sum = px.density_heatmap(
                     z="Monto",
                     text_auto=True,
                     title="Relación origen-destino por monto")
-
+par_sum = html.P(children='''
+    En este otro gráfico podemos ver las rutas de importación y exportación
+    entre países con su monto total.''',
+                   style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
 # Colores del gráfico
 heatmap_sum.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
+par_rutas_conc = html.P(children='''
+    Cómo podemos ver, no hay relación entre las rutas que más operaciones
+    tienen y las que más monto manejan. Por lo que no se recomienda implementar
+    una estrategia basada en la cantidad de importaciones y exportaciones''',
+                   style={'width': '60%', 'margin': '0 auto', 'textAlign': 'center', 'color': colors['text']})
+
 
 
 # Medios de transporte más importantes
 # Agrupamos el df original a partir del medio de transporte y sumamos su mont
-transportes = (df.groupby(['transport_mode'], group_keys=False)
+transportes = (df.groupby(['year', 'transport_mode'], group_keys=False)
                     .sum().reset_index())
 # Eliminamos las columnas que no nos interesan y nos quedamos solo con la de
 #   nombres de los medios de transporte y el monto de cada uno
-transportes.drop(['register_id', 'year'], axis=1, inplace=True)
+transportes.drop(['register_id'], axis=1, inplace=True)
 # Cambiamos el nombre de las columnas
 transportes.rename(columns={'transport_mode': 'Medio de Transporte',
-                            'total_value': 'Monto total'},
+                            'total_value': 'Monto total',
+                            'year': 'Año'},
                    inplace=True)
 
 # Creamos un gráfico tipo pie con los datos del df transportes
-pie_medios_transporte = px.pie(transportes,
-                               values='Monto total',
-                               names='Medio de Transporte',
+plot_medios_transporte = px.line(transportes,
+                               x='Año',
+                               y='Monto Total',
                                title='Medios de transporte por monto generado')
-
 pie_medios_transporte.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
+# Tabla en html a partir del df
+transportes_html = dash_table.DataTable(
+                    data=transportes.to_dict('records'),
+                    style_header={
+                        'backgroundColor': 'rgb(30, 30, 30)',
+                        'color': 'white'
+                    },
+                    style_data={
+                        'backgroundColor': 'rgb(50, 50, 50)',
+                        'color': 'white'
+                    })
+par_transportes = html.P(children='''
+     Los tres transportes más importantes para Synergy Logistics son Air, Rail
+     y Sea. Una estrategia recomendada sería crear un plan para sustituir Road
+     por los otros medios de transportes.''',
+                         style={'margin': '0', 'textAlign': 'center', 'color': colors['text']})
+
 
 # 80% del valor de exportaciones y importaciones
 # Copiamos el df original
@@ -202,11 +231,14 @@ app.layout = html.Div(
                 'color': colors['text']
             }),
 
+        html.Hr(),
 
         html.H2(children='Rutas más importantes', style={
                 'textAlign': 'center',
                 'color': colors['text']
             }),
+
+        par_count,
 
         dcc.Graph(
             id='heatmap_count',
@@ -214,44 +246,70 @@ app.layout = html.Div(
             style={'height': '90vh'}
         ),
 
+        par_sum,
+
         dcc.Graph(
             id='heatmap_sum',
             figure=heatmap_sum,
             style={'height': '100vh'}
         ),
 
+        par_rutas_conc,
 
-        html.H2(children='Medios de transporte', style={
-                'textAlign': 'center',
-                'color': colors['text']
-            }),
+        html.Hr(),
 
-        dcc.Graph(
-            id='pie_medios_transporte',
-            figure=pie_medios_transporte,
-            style={'width': '60vh', 'margin': '0 auto'}
-        ),
+        html.H2(children='Medios de transporte',
+                style={ 'textAlign': 'center', 'color': colors['text']}),
 
+        html.Div(
+            children=[
+                html.Div(children=[
+                            html.Div(par_transportes),
+                            transportes_html],
+                         style={'margin': 'auto',
+                                'height': '100%',
+                                'display': 'grid',
+                                'padding': '20%',
+                                'grid-template-rows': '2fr 3fr'}),
+                dcc.Graph(
+                    id='plot_medios_transporte',
+                    figure=plot_medios_transporte,
+                    style={'height': '100%', 'margin': 'auto'})],
+            style={'height': '80vh',
+                    'display': 'grid',
+                    'width': '80%',
+                    'margin': '0 auto',
+                    # 'justify-content': 'center',
+                    # 'align-items': 'center',
+                    # 'gap': '4px',
+                    'grid-template-columns': '2fr 3fr'}),
+
+
+        html.Hr(),
 
         html.H2(children='Rutas del 80% del monto generado', style={
                 'textAlign': 'center',
                 'color': colors['text']
             }),
 
-        dcc.Graph(
-            id='bar_origin_100',
-            figure=bar_origin_100,
-            style={'height': '90vh', 'width': '100vh', 'margin': '0 auto'}
-        ),
-
-        dcc.Graph(
-            id='bar_origin_80',
-            figure=bar_origin_80,
-            style={'height': '90vh', 'width': '100vh', 'margin': '0 auto'}
-
-        )
-
-
+        html.Div(children=[
+            dcc.Graph(
+                id='bar_origin_100',
+                figure=bar_origin_100,
+                style={'height': '90vh', 'width': '90vh', 'margin': '0 auto'}
+            ),
+            dcc.Graph(
+                id='bar_origin_80',
+                figure=bar_origin_80,
+                style={'height': '90vh', 'width': '90vh', 'margin': '0 auto'}
+            )],
+            style={'display': 'grid',
+                    'width': '100%',
+                    'margin': '0 auto',
+                    # 'justify-content': 'center',
+                    # 'align-items': 'center',
+                    # 'gap': '4px',
+                    'grid-template-columns': '1fr 1fr'}),
 ])
 
 if __name__ == '__main__':

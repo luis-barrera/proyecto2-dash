@@ -5,3 +5,34 @@ html, body {
     width: 100%;
     height: 100%;
 }
+
+table {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+hr {
+    border: none;
+    border-top: 3px double #333;
+    color: #f3f6f4;
+    overflow: visible;
+    text-align: center;
+    height: 5px;
+}
+
+hr:after {
+    background: #111111;
+    content: '§';
+    padding: 0 4px;
+    position: relative;
+    top: -13px;
+}
+/* table { */
+/* 	table-layout: auto; */
+/* 	margin: 0 auto; */
+/* } */
+
+/* table td{ */
+/*     white-space: nowrap; */
+/* } */
