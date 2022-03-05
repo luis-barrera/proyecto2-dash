@@ -52,7 +52,7 @@ heatmap_count = px.density_heatmap(
                     # Título del gráfico
                     title="Relación origen-destino por cantidad")
 
-# Heatmap count
+# Colores del gráfico
 heatmap_count.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
@@ -82,6 +82,13 @@ heatmap_sum = px.density_heatmap(
                     text_auto=True,
                     title="Relación origen-destino por monto")
 
+# Colores del gráfico
+heatmap_sum.update_layout(
+    plot_bgcolor=colors['background'],
+    paper_bgcolor=colors['background'],
+    font_color=colors['text']
+)
+
 
 # Medios de transporte más importantes
 # Agrupamos el df original a partir del medio de transporte y sumamos su mont
@@ -101,6 +108,11 @@ pie_medios_transporte = px.pie(transportes,
                                names='Medio de Transporte',
                                title='Medios de transporte por monto generado')
 
+pie_medios_transporte.update_layout(
+    plot_bgcolor=colors['background'],
+    paper_bgcolor=colors['background'],
+    font_color=colors['text']
+)
 
 # 80% del valor de exportaciones y importaciones
 # Copiamos el df original
@@ -134,7 +146,7 @@ rutas_importantes_80 = rutas_importantes.loc[rutas_importantes['porcentaje'] <= 
 # Elegimos solos los países de acuerdo al origin.
 count_origin_80 = (rutas_importantes_80 .groupby(['origin'])
                     .count().reset_index())
-# Nos quedamos solo con la columan del nombre del país y de la cantidad de
+# Nos quedamos solo con la columna del nombre del país y de la cantidad de
 #   rutas que salen de ese país
 count_origin_80.drop(['total_value'], axis=1, inplace=True)
 # Cambiamos el nombre de las columnas
@@ -143,13 +155,24 @@ count_origin_80.rename(columns={'porcentaje': 'Cantidad de rutas',
 
 # Creamos una gráfica de barras con los datos de los df
 bar_origin_100 = px.bar(count_origin_100,
-                        x="País de origen",
-                        y="Cantidad de rutas",
+                        y="País de origen",
+                        x="Cantidad de rutas",
                         title="Rutas por países de origen del valor total")
 bar_origin_80 = px.bar(count_origin_80,
-                        x="País de origen",
-                        y="Cantidad de rutas",
+                        y="País de origen",
+                        x="Cantidad de rutas",
                         title="Rutas por países del 80% del valor")
+# Cambiamos los colores
+bar_origin_80.update_layout(
+    plot_bgcolor=colors['background'],
+    paper_bgcolor=colors['background'],
+    font_color=colors['text']
+)
+bar_origin_100.update_layout(
+    plot_bgcolor=colors['background'],
+    paper_bgcolor=colors['background'],
+    font_color=colors['text']
+)
 
 paises_descartados = []
 
@@ -163,49 +186,70 @@ for pais in list_100:
 # Creamos la app en Dash
 app = Dash(__name__)
 
-app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
-    html.H1(children='Synergy Logistics', style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }),
+app.layout = html.Div(
+    style={'backgroundColor': colors['background']},
+    children=[
+        html.H1(children='Synergy Logistics', style={
+                'textAlign': 'center',
+                'color': colors['text']
+            }),
 
-    html.Div(children='''
-        Análisi de datos de la información proporcionada por Synergy Logistics
-        para el diseño de una nueva estrategía en el año 2021
-    ''', style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }),
+        html.Div(children='''
+            Análisis de datos de importación y exportación para el diseño de
+            una nueva estrategía en el año 2021
+        ''', style={
+                'textAlign': 'center',
+                'color': colors['text']
+            }),
 
-    html.H2(children='Rutas más importantes', style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }),
 
-    dcc.Graph(
-        id='heatmap_count',
-        figure=heatmap_count
-    ),
+        html.H2(children='Rutas más importantes', style={
+                'textAlign': 'center',
+                'color': colors['text']
+            }),
 
-    dcc.Graph(
-        id='heatmap_sum',
-        figure=heatmap_sum
-    ),
+        dcc.Graph(
+            id='heatmap_count',
+            figure=heatmap_count,
+            style={'height': '90vh'}
+        ),
 
-    dcc.Graph(
-        id='pie_medios_transporte',
-        figure=pie_medios_transporte
-    ),
+        dcc.Graph(
+            id='heatmap_sum',
+            figure=heatmap_sum,
+            style={'height': '100vh'}
+        ),
 
-    dcc.Graph(
-        id='bar_origin_100',
-        figure=bar_origin_100
-    ),
 
-    dcc.Graph(
-        id='bar_origin_80',
-        figure=bar_origin_80
-    )
+        html.H2(children='Medios de transporte', style={
+                'textAlign': 'center',
+                'color': colors['text']
+            }),
+
+        dcc.Graph(
+            id='pie_medios_transporte',
+            figure=pie_medios_transporte,
+            style={'width': '60vh', 'margin': '0 auto'}
+        ),
+
+
+        html.H2(children='Rutas del 80% del monto generado', style={
+                'textAlign': 'center',
+                'color': colors['text']
+            }),
+
+        dcc.Graph(
+            id='bar_origin_100',
+            figure=bar_origin_100,
+            style={'height': '90vh', 'width': '100vh', 'margin': '0 auto'}
+        ),
+
+        dcc.Graph(
+            id='bar_origin_80',
+            figure=bar_origin_80,
+            style={'height': '90vh', 'width': '100vh', 'margin': '0 auto'}
+
+        )
 
 
 ])
