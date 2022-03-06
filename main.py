@@ -29,7 +29,7 @@ colors = {
 }
 
 # Creamos el DataFrame (df) del Archivo
-df = pd.read_csv("./synergy_logistics_database.csv")
+df = pd.read_csv("synergy_logistics_database.csv")
 # df = pd.read_csv("https://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csvhttps://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csv")
 
 # Rutas importaciones y exportaciones
