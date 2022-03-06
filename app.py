@@ -5,7 +5,6 @@
 # Imports para Dash
 from dash import Dash, html, dcc, dash_table
 import plotly.express as px
-import os
 
 # Imports para Data Analisis
 import pandas as pd
@@ -18,7 +17,8 @@ colors = {
 }
 
 # Creamos el DataFrame (df) del Archivo
-df = pd.read_csv("./synergy_logistics_database.csv")
+# df = pd.read_csv("synergy_logistics_database.csv")
+df = pd.read_csv("https://raw.githubusercontent.com/luis-barrera/proyecto2-dash/main/synergy_logistics_database.csv")
 
 # Rutas importaciones y exportaciones
 # Copiamos el df original
@@ -249,8 +249,6 @@ par_paises_descartados.children.append(".")
 # Creamos la app en Dash
 app = Dash(__name__)
 
-server = app.server
-
 # Declaramos el layout
 app.layout = html.Div(
     style={'backgroundColor': colors['background']},
@@ -368,5 +366,5 @@ app.layout = html.Div(
 ])
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
 
