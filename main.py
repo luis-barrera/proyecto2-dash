@@ -11,6 +11,17 @@ import os
 import pandas as pd
 import numpy as np
 
+# Import para servir archivos en Heroku
+from whitenoise import WhiteNoise
+
+
+# Dash
+# Creamos la app en Dash
+app = Dash(__name__)
+
+server = app.server
+server.wsgi_app = WhiteNoise(server.wsgi_app, root='static/')
+
 # Colores para los gráficos y la página
 colors = {
     'background': '#111111',
@@ -18,8 +29,8 @@ colors = {
 }
 
 # Creamos el DataFrame (df) del Archivo
-# df = pd.read_csv("./synergy_logistics_database.csv")
-df = pd.read_csv("https://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csvhttps://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csv")
+df = pd.read_csv("./synergy_logistics_database.csv")
+# df = pd.read_csv("https://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csvhttps://raw.githubusercontent.com/luis-barrera/emtech-proyecto-2/main/synergy_logistics_database.csv")
 
 # Rutas importaciones y exportaciones
 # Copiamos el df original
@@ -245,12 +256,6 @@ for i in range(len(paises_descartados)):
 
 par_paises_descartados.children.append(".")
 
-
-# Dash
-# Creamos la app en Dash
-app = Dash(__name__)
-
-server = app.server
 
 # Declaramos el layout
 app.layout = html.Div(
